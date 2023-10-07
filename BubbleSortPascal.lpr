@@ -156,7 +156,7 @@ begin
                SetLength(ArrayValores, n);
           end;
       end;
-    end;
+
 
     // Inicializando um contador para controle dos elementos inseridos no array
     Contador := 1;
