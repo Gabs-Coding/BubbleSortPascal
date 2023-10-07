@@ -1,0 +1,9 @@
+# arquivos
+*.exe
+*.lpi
+*.lps
+
+# diretórios
+lib/
+backup/
+arquivos_ordenados/
