@@ -80,7 +80,7 @@ procedure GuardaListaOrdenada(var ArrayValores: Array of Integer;
   NomeArquivo: String);
 var
    ArquivoSaida: TextFile;
-   CaminhoPasta, NomeArquivoSaida: String;
+   CaminhoPasta, NomeArquivoSaida, DadoAtual: String;
    i: Integer;
 
 begin
@@ -109,8 +109,9 @@ begin
   i := 0;
   while (i < Length(ArrayValores)) do
   begin
-      writeln(ArquivoSaida, ArrayValores[i]);
-      Inc(i);
+       DadoAtual := inttostr(ArrayValores[i]);
+       writeln(ArquivoSaida, DadoAtual);
+       Inc(i);
   end;
   CloseFile(ArquivoSaida);
 end;
@@ -120,7 +121,7 @@ const
 
 var
   ArquivoInfo: TSearchRec;
-  CaminhoDaPasta: string;
+  CaminhoDaPasta, leitura_arquivo: string;
   ArqEntrada: TextFile;
   Contador, Controle, n: Integer;
   ArrayValores: Array of Integer;
@@ -198,7 +199,8 @@ begin
         while not EOF(ArqEntrada) and (Contador < Length(ArrayValores))do
         begin
           // Lendo o valor do arquivo e o guardando dentro de um array;
-          ReadLn(ArqEntrada, ArrayValores[Contador]);
+          ReadLn(ArqEntrada, leitura_arquivo);
+          ArrayValores[Contador] := strtoint(leitura_arquivo);
           Inc(Contador);
         end;
       CloseFile(ArqEntrada);
@@ -226,6 +228,9 @@ begin
       SetLength(ArrayValores, 0);
   end
   else
+  begin
     writeln('Nenhum arquivo encontrado.');
-  readln;
+    readln;
+  end;
+  writeln('Arquivos ordenados com sucesso! :D');
 end.
