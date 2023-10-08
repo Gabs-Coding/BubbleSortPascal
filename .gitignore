@@ -2,8 +2,10 @@
 *.exe
 *.lpi
 *.lps
+*.dbg
 
 # diretórios
 lib/
 backup/
 arquivos_ordenados/
+logs_dos_arquivos/

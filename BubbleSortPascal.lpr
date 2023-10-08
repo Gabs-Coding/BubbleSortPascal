@@ -56,11 +56,12 @@ begin
        // Repetição mais externa controla o número de passagens.
        HasSwitched := false; // Inicialmente sem trocas na passagem.
        j := 0;
-       while (j < n-Pass-1) do
+       while (j < n-Pass-1) and (j < Length(ArrayValores)) do
        begin
             // Repetição mais interna contrada cada Pass individual.
             if (ArrayValores[j] > ArrayValores[j+1]) then
             begin
+
                  {Caso seja verdadeiro, os elementos estão fora de ordem e é
                  necessário fazer uma troca.}
                  HasSwitched := true;
@@ -75,7 +76,7 @@ begin
    // Depois disso, o vetor estará ordenado.
 end;
 
-procedure GuardaListaOrdenada(var ArrayValores: Array of Integer; n: Integer;
+procedure GuardaListaOrdenada(var ArrayValores: Array of Integer;
   NomeArquivo: String);
 var
    ArquivoSaida: TextFile;
@@ -103,30 +104,35 @@ begin
   else
     Rewrite(ArquivoSaida);
 
-  for i := 0 to n do
+  writeln('Guardando na lista ' + NomeArquivo);
+  // Escrevendo a lista no arquivo.
+  i := 0;
+  while (i < Length(ArrayValores)) do
   begin
       writeln(ArquivoSaida, ArrayValores[i]);
+      Inc(i);
   end;
-
+  CloseFile(ArquivoSaida);
 end;
+
+const
+  CaminhoArquivo = 'D:\Documents\Estudo\Faculdade\5-Semestre\Estrutura-de-Dados\projetos\GerarArquivosComValoresAleatorios\arquivos_dos_numeros\';
 
 var
   ArquivoInfo: TSearchRec;
   CaminhoDaPasta: string;
   ArqEntrada: TextFile;
-  Contador, Controle, n: integer;
-  ArrayValores: array of Integer;
+  Contador, Controle, n: Integer;
+  ArrayValores: Array of Integer;
   TempoInicio, TempoFim: TDateTime;
 
 begin
-  WriteLn('Qual é o diretório para pesquisar os arquivos?');
-  ReadLn(CaminhoDaPasta);
-
+  CaminhoDaPasta := ExpandFileName(CaminhoArquivo);
   {Inicializando o array pela primeira vez (arquivos de 100 valores) e a variá-
   vel de controle.}
-
-  SetLength(ArrayValores, 100);
-  Controle := 0;
+  n := 100;
+  SetLength(ArrayValores, n);
+  Controle := 1;
 
   {Função que abre o diretório de arquivos inserido pelo usuário, busca arquivos
   .txt dentro deles, salva os valores contidos dentro dos arquivos em um array
@@ -141,7 +147,7 @@ begin
   begin
     repeat
     // O nome do arquivo está em ArquivoInfo.Name
-    AssignFile(ArqEntrada, ArquivoInfo.Name);
+    AssignFile(ArqEntrada, CaminhoArquivo + ArquivoInfo.Name);
     Reset(ArqEntrada);
 
     { Checando a variável de controle e alocando memória segundo a lógica
@@ -149,94 +155,75 @@ begin
     case Controle of
       4: begin
               n := 500;
-              SetLength(ArrayValores, n);
          end;
       8: begin
               n := 1000;
-              SetLength(ArrayValores, n);
          end;
       12: begin
                n := 5000;
-               SetLength(ArrayValores, n);
           end;
       16: begin
                n := 10000;
-               SetLength(ArrayValores, n);
           end;
       20: begin
                n := 50000;
-               SetLength(ArrayValores, n);
           end;
       24: begin
                n := 50000;
-               SetLength(ArrayValores, n);
           end;
       28: begin
                n := 100000;
-               SetLength(ArrayValores, n);
           end;
       32: begin
                n := 500000;
-               SetLength(ArrayValores, n);
           end;
       36: begin
                n := 1000000;
-               SetLength(ArrayValores, n);
           end;
       40: begin
                n := 5000000;
-               SetLength(ArrayValores, n);
           end;
       44: begin
                n := 10000000;
-               SetLength(ArrayValores, n);
           end;
       48: begin
                n := 50000000;
-               SetLength(ArrayValores, n);
           end;
       end;
+      SetLength(ArrayValores, n);
+      Inc(Controle);
 
+      // Inicializando um contador para controle dos elementos inseridos no array
+      Contador := 1;
+        while not EOF(ArqEntrada) and (Contador < Length(ArrayValores))do
+        begin
+          // Lendo o valor do arquivo e o guardando dentro de um array;
+          ReadLn(ArqEntrada, ArrayValores[Contador]);
+          Inc(Contador);
+        end;
+      CloseFile(ArqEntrada);
 
-    // Inicializando um contador para controle dos elementos inseridos no array
-    Contador := 1;
-      while not EOF(ArqEntrada) do
-      begin
-        // Lendo o valor do arquivo e o guardando dentro de um array;
-        ReadLn(ArqEntrada, ArrayValores[Contador]);
-        Inc(Contador);
-      end;
+      // Inicializando variável 1 para calcular o tempo levado para a ordenação.
+      TempoInicio := Now;
 
-    {A variável de controle abaixo serve para reajustar o vetor dinamicamente
-    para que ele comporte a quantidade de elementos do arquivo. Caso precise
-    utilizar em outro código, com outra disposição de arquivos, mude essa va-
-    riável e reajustar a função SetLength() para os parâmetros desejados.}
-    Inc(Controle);
-    CloseFile(ArqEntrada);
+      // Chamando o procedimento de ordenação do array.
+      OrdenarLista(ArrayValores, n);
 
-    // Inicializando variável 1 para calcular o tempo levado para a ordenação.
-    TempoInicio := Now;
+      // Inicializando variável 2 para calcular o tempo levado para a ordenação.
+      TempoFim := Now;
 
-    // Chamando o procedimento de ordenação do array.
-    OrdenarLista(ArrayValores, n);
+      // Chamada de procedimento para armazenar o Array ordenado em um arquivo.
+      GuardaListaOrdenada(ArrayValores, ArquivoInfo.Name);
 
-    // Inicializando variável 2 para calcular o tempo levado para a ordenação.
-    TempoFim := Now;
+      { Chamada de procedimento que calcula o tempo levado na ordenação e o
+      armazenando em um diretório com um arquivo de logs.}
+      CalcularTempo(TempoInicio, TempoFim, ArquivoInfo.Name);
 
-    // Chamada de procedimento para armazenar o Array ordenado em um arquivo.
-    GuardaListaOrdenada(ArrayValores, n, ArquivoInfo.Name);
+      until FindNext(ArquivoInfo) <> 0;
 
-    // Desalocando a memória para o Array;
-    SetLength(ArrayValores, 0);
-
-    { Chamada de procedimento que calcula o tempo levado na ordenação e o
-    armazenando em um diretório com um arquivo de logs.}
-    CalcularTempo(TempoInicio, TempoFim, ArquivoInfo.Name);
-
-    until FindNext(ArquivoInfo) <> 0;
-
-    FindClose(ArquivoInfo);
-
+      FindClose(ArquivoInfo);
+      // Desalocando a memória para o Array;
+      SetLength(ArrayValores, 0);
   end
   else
     writeln('Nenhum arquivo encontrado.');
