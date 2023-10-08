@@ -1,4 +1,4 @@
-program InsertionSortPascal;
+program BubbleSortPascal;
 
 uses
   SysUtils, DateUtils;
@@ -41,12 +41,46 @@ begin
   CloseFile(ArquivoLog);
 end;
 
-procedure OrdenarVetor(ArrayValores: Array of Integer;
-  NomeArquivoEntrada: String);
+procedure OrdenarLista(var ArrayValores: Array of Integer; n: Integer);
 
 var
-  ArquivoSaida: TextFile;
-  CaminhoPasta, NomeArquivoSaida: String;
+  Hold, j, Pass: Integer;
+  HasSwitched: Boolean;
+
+begin
+  // Método de classificação (ordenação) por bolha propriamente dito a seguir.
+  HasSwitched := true;
+  Pass := 0;
+  while ((Pass < n-1) and (HasSwitched = true)) do
+  begin
+       // Repetição mais externa controla o número de passagens.
+       HasSwitched := false; // Inicialmente sem trocas na passagem.
+       j := 0;
+       while (j < n-Pass-1) do
+       begin
+            // Repetição mais interna contrada cada Pass individual.
+            if (ArrayValores[j] > ArrayValores[j+1]) then
+            begin
+                 {Caso seja verdadeiro, os elementos estão fora de ordem e é
+                 necessário fazer uma troca.}
+                 HasSwitched := true;
+                 Hold := ArrayValores[j];
+                 ArrayValores[J] := ArrayValores[j+1];
+                 ArrayValores[j+1] := Hold;
+            end;
+            j := j + 1;
+       end;
+       Pass := Pass + 1;
+  end;
+   // Depois disso, o vetor estará ordenado.
+end;
+
+procedure GuardaListaOrdenada(var ArrayValores: Array of Integer; n: Integer;
+  NomeArquivo: String);
+var
+   ArquivoSaida: TextFile;
+   CaminhoPasta, NomeArquivoSaida: String;
+   i: Integer;
 
 begin
   // Criando o caminho de onde os arquivos ordenados ficarão.
@@ -57,19 +91,24 @@ begin
     ForceDirectories(CaminhoPasta);
 
   // Criando o nome do arquivo a ser criado.
-  NomeArquivoSaida := CaminhoPasta + '_' + NomeArquivoEntrada;
+  NomeArquivoSaida := CaminhoPasta + '_' + NomeArquivo;
+
+  // Atribui a variável TextFile o nome dado.
   AssignFile(ArquivoSaida, NomeArquivoSaida);
 
+  {Se o arquivo existe, as informações são acrescentadas nele; senão é criado
+  um novo.}
   if FileExists(NomeArquivoSaida) then
     Append(ArquivoSaida)
   else
     Rewrite(ArquivoSaida);
 
-
-
+  for i := 0 to n do
+  begin
+      writeln(ArquivoSaida, ArrayValores[i]);
+  end;
 
 end;
-
 
 var
   ArquivoInfo: TSearchRec;
@@ -105,7 +144,8 @@ begin
     AssignFile(ArqEntrada, ArquivoInfo.Name);
     Reset(ArqEntrada);
 
-    // Checando a variável de controle
+    { Checando a variável de controle e alocando memória segundo a lógica
+    aplicada.}
     case Controle of
       4: begin
               n := 500;
@@ -174,16 +214,24 @@ begin
     Inc(Controle);
     CloseFile(ArqEntrada);
 
-    {Chamando a função de obter o tempo atual para calcular a duração da ordena-
-    ção}
+    // Inicializando variável 1 para calcular o tempo levado para a ordenação.
     TempoInicio := Now;
 
     // Chamando o procedimento de ordenação do array.
-    OrdenarVetor(ArrayValores, ArquivoInfo.Name);
+    OrdenarLista(ArrayValores, n);
 
+    // Inicializando variável 2 para calcular o tempo levado para a ordenação.
     TempoFim := Now;
+
+    // Chamada de procedimento para armazenar o Array ordenado em um arquivo.
+    GuardaListaOrdenada(ArrayValores, n, ArquivoInfo.Name);
+
+    // Desalocando a memória para o Array;
     SetLength(ArrayValores, 0);
-    CalcularTempo(TempoInicio, TempoFim, ArquivoInfo.Name)
+
+    { Chamada de procedimento que calcula o tempo levado na ordenação e o
+    armazenando em um diretório com um arquivo de logs.}
+    CalcularTempo(TempoInicio, TempoFim, ArquivoInfo.Name);
 
     until FindNext(ArquivoInfo) <> 0;
 
